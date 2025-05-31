@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <title>Medichat-Healthcare assistant</title>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-200 min-h-screen flex items-center justify-center">
+  <div class="chat-container glass shadow-2xl">
+    
+    <!-- Heading -->
+    <div class="chat-header">MediChat</div>
+    
+    <!-- Chat Messages -->
+    <div id="chatbox" class="chat-box"></div>
+    
+    <!-- Input Form -->
+    <form id="chat-form" class="flex mt-4">
+      <input id="user-input" type="text" placeholder="Ask something..." required class="chat-input" />
+      <button type="submit" class="chat-button">Send</button>
+    </form>
+  </div>
+
+
+
+  <script>
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("user-input");
+  const chatbox = document.getElementById("chatbox");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    chatbox.innerHTML += `<div class="text-right"><div class="user-message">${userMsg}</div></div>`;
+    input.value = "";
+
+    // Typing animation
+    const typingId = `typing-${Date.now()}`;
+    chatbox.innerHTML += `<div class="text-left" id="${typingId}"><div class="bot-message typing">Typing<span class="dot one">.</span><span class="dot two">.</span><span class="dot three">.</span></div></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    const response = await fetch("/get", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `msg=${encodeURIComponent(userMsg)}`
+    });
+
+    const botMsg = await response.text();
+
+    // Remove typing animation
+    document.getElementById(typingId).remove();
+
+    // Display bot response
+    chatbox.innerHTML += `<div class="text-left"><div class="bot-message">${botMsg}</div></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+</script>
+
+</body>
+</html>
